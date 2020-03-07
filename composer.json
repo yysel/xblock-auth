@@ -1,0 +1,25 @@
+{
+    "name": "xblock/auth",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Jim",
+            "email": "927994432@qq.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "XBlock\\Auth\\":"src/"
+        }
+    },
+    "require": {
+        "laravel/lumen-framework":"*"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "XBlock\\Auth\\AuthProvider"
+            ]
+        }
+    }
+}
