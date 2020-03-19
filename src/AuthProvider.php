@@ -30,8 +30,7 @@ class AuthProvider extends ServiceProvider
         }
         $this->app->make('auth')->viaRequest('xblock', function ($request) {
             $auth = new AuthService();
-            $token = $auth->parseRequestBearerToken($request);
-            return $token ? $token->user : null;
+            return $auth->getUserFormParseBearerToken($request);
         });
     }
 

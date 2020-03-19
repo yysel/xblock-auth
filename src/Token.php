@@ -14,13 +14,16 @@ use Illuminate\Database\Eloquent\Model;
 class Token extends Model
 {
     protected $table = 'oauth_token';
-    protected $fillable = ['user_id', 'id', 'client_id'];
-
+    protected $fillable = ['user_id', 'id', 'expires_at'];
+    public $timestamps = false;
     public $incrementing = false;
 
-    public function user()
+    public function getUser($token_id)
     {
+        $token = $this->find($token_id);
+        if (!$token) return null;
+        if (($token->expires_at && strtotime($token->expires_at) < time())) return null;
         $userModel = AuthService::userModel();
-        return $this->belongsTo($userModel, 'user_id', (new $userModel)->getKeyName());
+        return (new $userModel)->find($token->user_id);
     }
 }

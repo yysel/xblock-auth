@@ -35,7 +35,7 @@ class Login
         }
         if (!($user instanceof $user_modal)) return $user;
         $token = $this->server->createToken($user->{$key});
-        return message(true)->data((string)$token);
+        return message((bool)$token)->data((string)$token);
     }
 
     public function checkUser($user_modal, $request)

@@ -64,11 +64,12 @@ class AuthService
         $this->builder->sign($this->signer, $this->keychain->getPrivateKey('file://' . storage_path('private.key')));
         $token = $this->builder->getToken();
         if ($token) {
-            Token::create([
+            $res = $this->getTokenDriver()->create([
                 'id' => $id,
                 'user_id' => $user_uuid,
-                'client_id' => 1,
+                'expires_at' => $this->getExpires()
             ]);
+            if (!$res) return false;
         }
         return $token;
     }
@@ -89,21 +90,44 @@ class AuthService
 
     }
 
-    public function parseRequestBearerToken($request)
+    public function getUserFormParseBearerToken($request)
     {
-
         $bearer_token = $request->header('authorization');
         $token_array = explode(' ', $bearer_token);
         if (count($token_array) != 2) return null;
         $bearer_token = $token_array[1];
         $uid = $this->parseToken($bearer_token);
-        $token = Token::find($uid);
-        return $token;
+        return $this->getTokenDriver()->getUser($uid);
     }
 
     public static function userModel()
     {
         $default = config('auth.defaults.guard');
         return config('auth.guards.' . $default . '.model', \App\User::class);
+    }
+
+
+    public function getExpires()
+    {
+        $expires = config('auth.providers.xblock.expires', null);
+        return $expires > 0 ? date('Y-m-d H:i:s', time() + $expires * 60) : null;
+    }
+
+    public function getTokenDriver()
+    {
+        $driver = config('auth.providers.xblock.driver', 'database');
+        if ($driver === 'database') {
+            $model = config('auth.providers.xblock.model', Token::class);
+            if (!$model) return new Token();
+            if (class_exists($model)) {
+                $model = new $model;
+                if ($model instanceof Token) return (new $model);
+                else throw new \Exception('Token模型应继承自\XBlock\Auth\Token');
+            }
+        } else {
+            return new CacheTokenDriver();
+        }
+
+
     }
 }
