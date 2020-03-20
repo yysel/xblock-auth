@@ -13,7 +13,8 @@
         }
     },
     "require": {
-        "laravel/lumen-framework":"*"
+        "laravel/lumen-framework":"*",
+        "lcobucci/jwt": "^3.3"
     },
     "extra": {
         "laravel": {
