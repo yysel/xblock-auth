@@ -97,7 +97,8 @@ class AuthService
         if (count($token_array) != 2) return null;
         $bearer_token = $token_array[1];
         $uid = $this->parseToken($bearer_token);
-        return $this->getTokenDriver()->getUser($uid);
+        if($uid) return $this->getTokenDriver()->getUser($uid);
+        return null;
     }
 
     public static function userModel()
@@ -115,7 +116,7 @@ class AuthService
 
     public function getTokenDriver()
     {
-        $driver = config('auth.providers.xblock.driver', 'database');
+        $driver = config('auth.providers.xblock.driver', 'cache');
         if ($driver === 'database') {
             $model = config('auth.providers.xblock.model', Token::class);
             if (!$model) return new Token();
