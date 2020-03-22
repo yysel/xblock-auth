@@ -117,9 +117,10 @@ class AuthService
 
     public function getTokenDriver()
     {
-        $driver = config('auth.providers.xblock.driver', 'cache');
+        $provider = config('auth.guards.api.provider', 'xblock');
+        $driver = config('auth.providers.' . $provider . '.driver', 'cache');
         if ($driver === 'database') {
-            $model = config('auth.providers.xblock.model', Token::class);
+            $model = config('auth.providers.' . $provider . '.token', Token::class);
             if (!$model) return new Token();
             if (class_exists($model)) {
                 $model = new $model;
@@ -129,7 +130,5 @@ class AuthService
         } else {
             return new CacheTokenDriver();
         }
-
-
     }
 }
