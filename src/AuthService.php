@@ -11,6 +11,7 @@ namespace XBlock\Auth;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Keychain;
+use XBlock\Helper\Tool;
 
 class AuthService
 {
@@ -54,7 +55,7 @@ class AuthService
 
     public function createToken($user_uuid = '')
     {
-        $id = guid();
+        $id = Tool::guid();
         openssl_private_encrypt($id, $private_token, file_get_contents(storage_path('private.key')));
         $private_token = base64_encode($private_token);
         $this->builder->setId(md5(time()), true);
@@ -97,14 +98,14 @@ class AuthService
         if (count($token_array) != 2) return null;
         $bearer_token = $token_array[1];
         $uid = $this->parseToken($bearer_token);
-        if($uid) return $this->getTokenDriver()->getUser($uid);
+        if ($uid) return $this->getTokenDriver()->getUser($uid);
         return null;
     }
 
     public static function userModel()
     {
-        $default = config('auth.defaults.guard');
-        return config('auth.guards.' . $default . '.model', \App\User::class);
+        $provider = config('auth.guards.api.provider', 'xblock');
+        return config('auth.providers.' . $provider . '.model', \App\User::class);
     }
 
 
