@@ -59,8 +59,8 @@ class Login
         if (method_exists($user, 'loginUser')) {
             $user = $user->loginUser($request);
         }
-        $user->permission = $user->permission;
-
+        $permission = $user->permission;
+        $user->permission = $permission ? $permission : [];
         return message(true)->data($user);
     }
 }
