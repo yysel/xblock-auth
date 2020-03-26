@@ -15,19 +15,6 @@ class AuthProvider extends ServiceProvider
 
     public function boot()
     {
-
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../database/migrations' => database_path('migrations'),
-            ], 'xblock-auth-migrations');
-
-
-//            $this->commands([
-//                Console\InstallCommand::class,
-//                Console\ClientCommand::class,
-//                Console\KeysCommand::class,
-//            ]);
-        }
         $this->app->make('auth')->viaRequest('xblock', function ($request) {
             $auth = new AuthService();
             return $auth->getUserFormParseBearerToken($request);
@@ -44,7 +31,7 @@ class AuthProvider extends ServiceProvider
         $this->app->routeMiddleware([
             'auth' => Authenticate::class,
         ]);
-        $this->registerMigrations();
+
         $this->app->router->group(['prefix' => 'api/xblock/auth', 'namespace' => 'XBlock\Auth'], function ($router) {
             $router->post('/login', [
                 'uses' => 'Login@index',
@@ -55,16 +42,25 @@ class AuthProvider extends ServiceProvider
             ]);
         });
 
-        $this->commands([
-            CreateKey::class
-        ]);
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/../database/migrations' => database_path('migrations'),
+            ], 'xblock');
+            $this->registerMigrations();
+            $this->commands([
+                CreateKey::class
+            ]);
+        }
 
     }
 
     protected function registerMigrations()
     {
-        return $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $path = base_path('config/auth.php');
+        $config = file_exists($path) ? require_once($path) : [];
+        $provider = isset($config['guards']['api']['provider']) ? $config['guards']['api']['provider'] : 'xblock';
+        $driver = isset($config['providers'][$provider]['driver']) ? $config['providers'][$provider]['driver'] : 'cache';
+        if ($driver === 'database') $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
-
 
 }
