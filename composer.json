@@ -14,7 +14,7 @@
     },
     "require": {
         "laravel/lumen-framework":"^7.0",
-        "lcobucci/jwt": "^3.3"
+        "lcobucci/jwt": "^3.3.3"
     },
     "extra": {
         "laravel": {
