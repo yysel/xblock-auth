@@ -2,6 +2,7 @@
 
 namespace XBlock\Auth;
 
+use Illuminate\Auth\RequestGuard;
 use Illuminate\Support\ServiceProvider;
 
 class AuthProvider extends ServiceProvider
@@ -15,9 +16,24 @@ class AuthProvider extends ServiceProvider
 
     public function boot()
     {
-        $this->app->make('auth')->viaRequest('xblock', function ($request) {
-            $auth = new AuthService();
-            return $auth->getUserFormParseBearerToken($request);
+        $auth = $this->app->make('auth');
+        $auth->extend('xblock', function ($app, $name, array $config) {
+
+            $guard = new RequestGuard(function () use ($app, $name, $config) {
+                $auth = new AuthService();
+                $provider = isset($config['provider']) ? $config['provider'] : null;
+                AuthService::$config = [
+                    'driver' => config("auth.providers.{$provider}.driver", 'database'),
+                    'token' => config("auth.providers.{$provider}.token", \XBlock\Auth\Token::class),
+                    'model' => config("auth.providers.{$provider}.model", \Core\Common\Models\User::class),
+                    'expires' => config("auth.providers.{$provider}.expires", null)
+                ];
+                return $auth->getUserFormParseBearerToken($app['request']);
+            }, $this->app['request']);
+
+            $this->app->refresh('request', $guard, 'setRequest');
+
+            return $guard;
         });
     }
 

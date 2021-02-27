@@ -18,6 +18,7 @@ class AuthService
     private $signer;
     private $keychain;
     private $builder;
+    public static $config;
 
     public function __construct()
     {
@@ -39,7 +40,7 @@ class AuthService
     /**
      * @param String|null $path 秘钥存放地址
      */
-    public function createSecretFile(String $path = null)
+    public function createSecretFile(string $path = null)
     {
         if (!$path) $path = storage_path();
         $keys = $this->createSecretString();
@@ -75,7 +76,7 @@ class AuthService
         return $token;
     }
 
-    public function parseToken(String $token)
+    public function parseToken(string $token)
     {
         try {
             $parse = new \Lcobucci\JWT\Parser();
@@ -104,23 +105,22 @@ class AuthService
 
     public static function userModel()
     {
-        $provider = config('auth.guards.api.provider', 'xblock');
-        return config('auth.providers.' . $provider . '.model', \App\User::class);
+        return static::$config['model'];
     }
 
 
     public function getExpires()
     {
-        $expires = config('auth.providers.xblock.expires', null);
+        $expires = static::$config['expires'];
         return $expires > 0 ? date('Y-m-d H:i:s', time() + $expires * 60) : null;
     }
 
     public function getTokenDriver()
     {
-        $provider = config('auth.guards.api.provider', 'xblock');
-        $driver = config('auth.providers.' . $provider . '.driver', 'cache');
+
+        $driver = static::$config['driver'];
         if ($driver === 'database') {
-            $model = config('auth.providers.' . $provider . '.token', Token::class);
+            $model = static::$config['token'];
             if (!$model) return new Token();
             if (class_exists($model)) {
                 $model = new $model;
