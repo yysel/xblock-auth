@@ -9,11 +9,10 @@
     ],
     "autoload": {
         "psr-4": {
-            "XBlock\\Auth\\":"src/"
+            "XBlock\\Auth\\": "src/"
         }
     },
     "require": {
-        "laravel/lumen-framework":"^6.0",
         "lcobucci/jwt": "^3.3.3"
     },
     "extra": {
