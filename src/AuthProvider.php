@@ -18,14 +18,13 @@ class AuthProvider extends ServiceProvider
     {
         $auth = $this->app->make('auth');
         $auth->extend('xblock', function ($app, $name, array $config) {
-
             $guard = new RequestGuard(function () use ($app, $name, $config) {
                 $auth = new AuthService();
                 $provider = isset($config['provider']) ? $config['provider'] : null;
                 AuthService::$config = [
                     'driver' => config("auth.providers.{$provider}.driver", 'database'),
                     'token' => config("auth.providers.{$provider}.token", \XBlock\Auth\Token::class),
-                    'model' => config("auth.providers.{$provider}.model", \Core\Common\Models\User::class),
+                    'model' => config("auth.providers.{$provider}.model", \App\Models\User::class),
                     'expires' => config("auth.providers.{$provider}.expires", null)
                 ];
                 return $auth->getUserFormParseBearerToken($app['request']);

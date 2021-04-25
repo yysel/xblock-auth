@@ -17,9 +17,14 @@ class Login
 {
     protected $server;
 
+    public static $guard;
+
     public function __construct()
     {
+        AuthService::$config = $this->getConfig();
+
         $this->server = new AuthService();
+
     }
 
     public function index(Request $request)
@@ -45,6 +50,23 @@ class Login
             return $this->checkPassword($request->input('password'), $user->password) ? $user : message(false, '密码错误!');
         }
         return message(false, '账号不存在!');
+    }
+
+
+    protected function getConfig()
+    {
+        $default = config('auth.defaults.guard');
+        $guard = static::$guard ? static::$guard : $default;
+        $provider_key = config('auth.guards.' . $guard . '.provider');
+        $driver_key = config('auth.guards.' . $guard . '.provider');
+        $providers = config('auth.providers');
+        $config = empty($providers[$provider_key]) ? $providers[$driver_key] : $providers[$provider_key];
+        return $config + [
+                'driver' => 'cache',
+                'token' => \XBlock\Auth\Token::class,
+                'model' => \App\Models\User::class,
+                'expires' => null
+            ];
     }
 
     protected function checkPassword($password, $origin)
