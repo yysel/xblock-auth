@@ -13,12 +13,14 @@ class AuthProvider extends ServiceProvider
      * @return void
      */
 
+    static $loginUser;
 
     public function boot()
     {
         $auth = $this->app->make('auth');
         $auth->extend('xblock', function ($app, $name, array $config) {
             $guard = new RequestGuard(function () use ($app, $name, $config) {
+                if (static::$loginUser) return static::$loginUser;
                 $auth = new AuthService();
                 $provider = isset($config['provider']) ? $config['provider'] : null;
                 AuthService::$config = [
@@ -27,7 +29,9 @@ class AuthProvider extends ServiceProvider
                     'model' => config("auth.providers.{$provider}.model", \App\Models\User::class),
                     'expires' => config("auth.providers.{$provider}.expires", null)
                 ];
-                return $auth->getUserFormParseBearerToken($app['request']);
+                $user = $auth->getUserFormParseBearerToken($app['request']);
+                static::$loginUser = $user;
+                return $user;
             }, $this->app['request']);
 
             $this->app->refresh('request', $guard, 'setRequest');
