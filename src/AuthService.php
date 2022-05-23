@@ -103,6 +103,16 @@ class AuthService
         return null;
     }
 
+    public function getLoginUser($request)
+    {
+        if (isset(static::$config['get_login_user']) && static::$config['get_login_user'] instanceof \Closure) {
+            $get_user_method = static::$config['get_login_user']->bindTo($this);
+            return $get_user_method($request);
+        }
+        if (method_exists(static::userModel(), "getLoginUser")) return static::userModel()::getLoginUser($request);
+        return $this->getUserFormParseBearerToken($request);
+    }
+
     public static function userModel()
     {
         return static::$config['model'];

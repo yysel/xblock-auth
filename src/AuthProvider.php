@@ -27,9 +27,11 @@ class AuthProvider extends ServiceProvider
                     'driver' => config("auth.providers.{$provider}.driver", 'database'),
                     'token' => config("auth.providers.{$provider}.token", \XBlock\Auth\Token::class),
                     'model' => config("auth.providers.{$provider}.model", \App\Models\User::class),
-                    'expires' => config("auth.providers.{$provider}.expires", null)
+                    'expires' => config("auth.providers.{$provider}.expires", null),
+                    "get_login_user"=>config("auth.providers.{$provider}.get_login_user", null),
                 ];
-                $user = $auth->getUserFormParseBearerToken($app['request']);
+                $user = $auth->getLoginUser($app['request']);
+
                 static::$loginUser = $user;
                 return $user;
             }, $this->app['request']);
